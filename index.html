@@ -3,29 +3,192 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drag and Drop</title>
+    <title>DevPortfolio Board & Project Ranker</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Drag and Drop Property</h1>
-    <div class="container">
-      <div class="left">
-        <div class="list" draggable="true">
-          <img src="icon.png" alt="" />List item 1
+    <!-- Background Elements for Visual Depth -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <div class="app-container">
+      <header class="app-header">
+        <div class="logo-area">
+          <i class="fa-solid fa-layer-group logo-icon"></i>
+          <div>
+            <h1>DevPortfolio Ranker</h1>
+            <p>Drag, drop, and rank your projects to optimize your CV portfolio</p>
+          </div>
         </div>
-        <div class="list" draggable="true">
-          <img src="icon.png" alt="" />List item 2
+        <div class="header-actions">
+          <button id="btn-export" class="btn btn-primary">
+            <i class="fa-solid fa-file-export"></i> Export Markdown
+          </button>
+          <button id="btn-add-project" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i> Add Project
+          </button>
+          <button id="btn-reset" class="btn btn-danger-outline" title="Reset to default project list">
+            <i class="fa-solid fa-rotate-right"></i> Reset
+          </button>
         </div>
-        <div class="list" draggable="true">
-          <img src="icon.png" alt="" />List item 3
+      </header>
+
+      <!-- Dashboard Controls (Search & Tag Filters) -->
+      <section class="controls-panel">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="search-input" placeholder="Search projects by name, tag, or tech..." />
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Filter Stack:</span>
+          <div class="filter-chips" id="filter-chips">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="React">React</button>
+            <button class="chip" data-filter="Vue">Vue</button>
+            <button class="chip" data-filter="Laravel">Laravel</button>
+            <button class="chip" data-filter="JS">Javascript</button>
+            <button class="chip" data-filter="CSS">CSS/HTML</button>
+            <button class="chip" data-filter="SaaS">SaaS</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Board -->
+      <main class="board-container">
+        <!-- Column 1: Inbox/Backlog -->
+        <div class="board-column" data-status="backlog">
+          <div class="column-header">
+            <div class="column-title-wrapper">
+              <span class="column-dot dot-backlog"></span>
+              <h2>Project Backlog</h2>
+            </div>
+            <span class="card-count" id="count-backlog">0</span>
+          </div>
+          <div class="column-cards-container" id="cards-backlog">
+            <!-- Dynamic cards will be injected here -->
+          </div>
         </div>
 
-        <div class="list" draggable="true">
-          <img src="icon.png" alt="" />List item 4
+        <!-- Column 2: In Progress -->
+        <div class="board-column" data-status="progress">
+          <div class="column-header">
+            <div class="column-title-wrapper">
+              <span class="column-dot dot-progress"></span>
+              <h2>In Development</h2>
+            </div>
+            <span class="card-count" id="count-progress">0</span>
+          </div>
+          <div class="column-cards-container" id="cards-progress">
+            <!-- Dynamic cards will be injected here -->
+          </div>
+        </div>
+
+        <!-- Column 3: Completed -->
+        <div class="board-column" data-status="completed">
+          <div class="column-header">
+            <div class="column-title-wrapper">
+              <span class="column-dot dot-completed"></span>
+              <h2>Completed</h2>
+            </div>
+            <span class="card-count" id="count-completed">0</span>
+          </div>
+          <div class="column-cards-container" id="cards-completed">
+            <!-- Dynamic cards will be injected here -->
+          </div>
+        </div>
+
+        <!-- Column 4: CV Highlights -->
+        <div class="board-column" data-status="highlights">
+          <div class="column-header">
+            <div class="column-title-wrapper">
+              <span class="column-dot dot-highlights"></span>
+              <h2>CV Highlights (Ranked)</h2>
+            </div>
+            <span class="card-count" id="count-highlights">0</span>
+          </div>
+          <div class="column-cards-container" id="cards-highlights">
+            <!-- Dynamic cards will be injected here -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal: Add/Edit Project -->
+    <div id="project-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-title">Add New Project</h3>
+          <button id="modal-close" class="modal-close-btn">&times;</button>
+        </div>
+        <form id="project-form">
+          <input type="hidden" id="edit-project-id" />
+          <div class="form-group">
+            <label for="proj-name">Project Name</label>
+            <input type="text" id="proj-name" required placeholder="e.g. Lumina-Image-Workspace" />
+          </div>
+          <div class="form-group">
+            <label for="proj-tech">Tech Category / Tags</label>
+            <input type="text" id="proj-tech" required placeholder="e.g. UI & Asset Studio / API" />
+          </div>
+          <div class="form-group">
+            <label for="proj-complexity">Complexity Level</label>
+            <select id="proj-complexity">
+              <option value="Very Basic">Very Basic</option>
+              <option value="Basic">Basic</option>
+              <option value="Basic (Layout)">Basic (Layout)</option>
+              <option value="Basic (Logic)">Basic (Logic)</option>
+              <option value="Basic (Framework)">Basic (Framework)</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced (Front-end)">Advanced (Front-end)</option>
+              <option value="Advanced">Advanced</option>
+              <option value="Advanced (Framework)">Advanced (Framework)</option>
+              <option value="Professional Fullstack">Professional Fullstack</option>
+              <option value="Professional Elite">Professional Elite</option>
+              <option value="Most Advanced">Most Advanced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="proj-status">Board Status</label>
+            <select id="proj-status">
+              <option value="backlog">Project Backlog</option>
+              <option value="progress">In Development</option>
+              <option value="completed">Completed</option>
+              <option value="highlights">CV Highlights</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="btn-cancel" class="btn btn-secondary">Cancel</button>
+            <button type="submit" id="btn-save" class="btn btn-primary">Save Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Export Markdown -->
+    <div id="export-modal" class="modal-overlay">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h3>Generated Markdown Table</h3>
+          <button id="export-close" class="modal-close-btn">&times;</button>
+        </div>
+        <p class="modal-subtitle">Copy and paste this markdown directly into your <code>projects_ranking.md</code> file.</p>
+        <div class="textarea-container">
+          <textarea id="markdown-output" readonly></textarea>
+        </div>
+        <div class="modal-actions">
+          <button id="btn-copy-markdown" class="btn btn-success">
+            <i class="fa-solid fa-copy"></i> Copy to Clipboard
+          </button>
+          <button id="btn-export-close" class="btn btn-secondary">Close</button>
         </div>
       </div>
-
-      <div class="right"></div>
     </div>
 
     <script src="script.js"></script>
